@@ -1,0 +1,60 @@
+{function name=sortOption}
+    {if $active_sort === null}
+        {$active_sort = waRequest::get('sort')}
+    {/if}
+    {$inverted = in_array($sort, array('rating', 'create_datetime', 'total_sales', 'count', 'stock'))}
+    {$data = waRequest::get()}
+    {$data_active = waRequest::get()}
+    {$data['sort'] = $sort}
+    {$data_active['sort'] = $sort}
+    {if $sort == $active_sort}
+        {if waRequest::get('order') == 'asc'}
+            {$data['order'] = 'desc'}
+            {$data_active['order'] = 'asc'}
+        {else}
+            {$data['order'] = 'asc'}
+            {$data_active['order'] = 'desc'}
+        {/if}
+    {else}
+        {if $inverted}
+            {$data['order'] = 'desc'}
+        {else}
+            {$data['order'] = 'asc'}
+        {/if}
+    {/if}
+    {if $active_sort == $sort}
+        <option style="display: none;" value="?{http_build_query($data_active)}" {if $active_sort == $sort}selected="selected"{/if}>{$name} {if $active_sort == $sort}{if $data_active['order'] == 'asc'}&uarr;{else}&darr;{/if}{/if}</option>
+    {/if}
+    <option value="?{http_build_query($data)}">{$name} {if $active_sort == $sort}{if $data['order'] == 'asc'}&uarr;{else}&darr;{/if}{/if}</option>
+{/function}
+{if !empty($sorting) || $theme_settings.pages_control}
+    <div class="sorting_pages_block">
+        <!-- products thumbnail list view -->
+        {$sorting=!empty($category.params.enable_sorting)}
+        {if !empty($sorting)}
+            <!-- sorting -->
+            {$sort_fields = ['rating' => '[`Customer rating`]', 'total_sales' => '[`Bestsellers`]', 'price' => '[`Price`]', 'name' => '[`Name`]', 'create_datetime'=>'[`Date added`]', 'stock' => '[`In stock`]']}
+            {if !isset($active_sort)}
+                {$active_sort = $wa->get('sort', 'create_datetime')}
+            {/if}
+            <div class="sort select_block">
+                <span class="hidden-xs">Сортировать:</span>&nbsp;&nbsp;
+                <span class="select_wrapper">
+                    <select id="selectProductSort" class="select_style">
+                        {if !empty($category) && !$category.sort_products}
+                            <option value="" {if !$active_sort} selected="selected"{/if} >[`New & Popular`]</option>
+                        {/if}
+                        {foreach $sort_fields as $sort => $name}
+                            {$params = ['sort' => $sort, 'name' => $name, 'active_sort' => $active_sort]}
+                            {sortOption $params}
+                            {if $wa->get('sort') == $sort}
+                                {$wa->title( $wa->title()|cat:' — '|cat:$name)}
+                            {/if}
+                        {/foreach}
+                    </select>
+                        <span class="strelka all_trasition"></span>
+                        </span>
+            </div>
+        {/if}
+    </div>
+{/if}
